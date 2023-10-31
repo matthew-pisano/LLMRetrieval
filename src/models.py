@@ -1,6 +1,12 @@
-import openai
+import json
+import os
 
-from src.query import Doc
+import openai
+from dotenv import load_dotenv
+
+load_dotenv(".env")
+openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.organization = os.getenv("OPENAI_ORGANIZATION")
 
 
 class Model:
@@ -9,17 +15,57 @@ class Model:
     def generate(self, prompt: str, **kwargs) -> str:
         ...
 
-    def parse_document(self, doctext: str):
+    def keywords_by_document(self, doctext: str, input_doc_tokens: int = None, num_keywords=5):
 
-        prompt = f"""You are an information retrieval expert.  Your goal is to find passages (a few sentences) in documents that are the most relevant to the document as a whole.  For each passage, also select some keywords that are particularly relevant.
+        prompt = f"""You are an information retrieval expert.  Your goal is to find {num_keywords} keywords in a document that are the most relevant to the document as a whole.
+Give your answer as a JSON list of strings.
+For example: ["keyword1", "keyword2", ...]
+
+Document:
+{doctext[:input_doc_tokens * 4] if input_doc_tokens is not None else doctext}
+
+["""
+        resp = self.generate(prompt).replace("\n", "")
+
+        if not resp.startswith("["):
+            resp = "[" + resp
+        if not resp.endswith("]"):
+            resp += "]"
+
+        try:
+            return set(json.loads(resp))
+        except json.JSONDecodeError as e:
+            print("Unable to decode:", resp)
+            raise e
+
+    def keywords_by_passage(self, doctext: str, input_doc_tokens: int = None, num_passages=3, kws_per_passage=3):
+
+        prompt = f"""You are an information retrieval expert.  Your goal is to find {num_passages} passages (a few sentences) in documents that are the most relevant to the document as a whole.  For each passage, also select {kws_per_passage} keywords that are particularly relevant.
 Give your answer as a list of JSON objects that contain keys passage and keywords.
 For example: [{{"passage": "...", "keywords": [...]}}, {{...}}]
 
 Document:
-{doctext}
+{doctext[:input_doc_tokens * 4] if input_doc_tokens is not None else doctext}
 
 ["""
-        return self.generate(prompt)
+        resp = self.generate(prompt).replace("\n", "")
+        resp = resp.replace("}{", "}, {")
+
+        if not resp.startswith("["):
+            resp = "["+resp
+        if not resp.endswith("]"):
+            resp += "]"
+
+        try:
+            result = json.loads(resp)
+            keywords = set()
+            for passage in result:
+                for kw in passage["keywords"]:
+                    keywords.add(kw)
+            return keywords
+        except json.JSONDecodeError as e:
+            print("Unable to decode:", resp)
+            raise e
 
 
 class ManualModel(Model):
@@ -55,7 +101,7 @@ class OpenAIModel(Model):
         """Generates a response from the target OpenAI model"""
 
         response = openai.ChatCompletion.create(model=self.model_name,
-            messages=[{"role": "system", "content": "You are an information retrieval expert.  You gather relevant information from documents."},
+            messages=[{"role": "system", "content": "You are an information retrieval expert.  You gather relevant information from documents and output your responses in valid JSON format."},
                       {"role": "user", "content": prompt}])
 
         return response['choices'][0]['message']['content']

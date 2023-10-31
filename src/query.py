@@ -1,9 +1,7 @@
+import math
 import re
-import nltk
-from nltk.corpus import stopwords
 
-nltk.download('stopwords')
-stop_words = set(stopwords.words('english'))
+
 
 
 class Query:
@@ -23,9 +21,6 @@ class Doc:
         self.doctext = doctext
         self.score = score
 
-    def stripped(self):
-        return re.sub(" "+" | ".join(stop_words)+" ", " ", self.doctext)
-
     def __repr__(self):
         return f"Doc({self.docno}, {self.score})"
 
@@ -34,10 +29,17 @@ class QueryResult:
 
     def __init__(self, query: Query, result_docs: list[Doc]):
         self.query = query
-        self.result_docs = result_docs
+        self.docs = result_docs
+        self.scores = [doc.score for doc in self.docs]
+        self.max_score = max(self.scores)
+        self.cg = sum(self.scores)
+        self.dcg = sum([score/math.log2(i+2) for i, score in enumerate(self.scores)])
 
     def __getitem__(self, item):
-        return self.result_docs[item]
+        return self.docs[item]
+
+    def __iter__(self):
+        return iter(self.docs)
 
     def __repr__(self):
-        return f"QueryResult({self.query.query_id}, len={len(self.result_docs)})"
+        return f"QueryResult({self.query.query_id}, len={len(self.docs)})"

@@ -32,7 +32,7 @@ class TrecEval:
         formatted = ""
 
         for result in query_results:
-            for i, doc in enumerate(result.result_docs):
+            for i, doc in enumerate(result.docs):
                 formatted += f"{result.query.query_id} Q0 {doc.docno.replace('[', '').replace(']', '')} {i+1} {doc.score} DFR\n"
 
         return formatted

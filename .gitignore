@@ -1,3 +1,5 @@
 data
 tmp
 .idea
+.env
+sandbox.py
