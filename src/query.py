@@ -22,14 +22,23 @@ class Doc:
     def __len__(self):
         return len(self.doctext)
 
+    def __eq__(self, other):
+        return self.docno == other.docno
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.docno)
+
     def __repr__(self):
         return f"Doc({self.docno}, {self.score})"
 
 
 class QueryResult:
 
-    def __init__(self, query: Query, result_docs: list[Doc]):
-        self.query = query
+    def __init__(self, query_id: int, result_docs: list[Doc]):
+        self.query_id = query_id
         self.docs = result_docs
         self.scores = [doc.score for doc in self.docs]
         self.max_score = max(self.scores)
@@ -46,4 +55,4 @@ class QueryResult:
         return iter(self.docs)
 
     def __repr__(self):
-        return f"QueryResult({self.query.query_id}, len={len(self.docs)})"
+        return f"QueryResult({self.query_id}, len={len(self.docs)})"

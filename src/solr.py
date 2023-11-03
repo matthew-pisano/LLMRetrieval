@@ -32,7 +32,7 @@ class Solr:
         response = requests.get(query_url, params={"fl": "docno,score,doctext", "q": f"doctext:({query.query_text})", "rows": rows, "sort": "score desc"})
         if response.status_code == 200:
             docs = [Doc(doc["docno"], doc["doctext"], doc["score"]) for doc in response.json()["response"]["docs"]]
-            return QueryResult(query, docs)
+            return QueryResult(query.query_id, docs)
         raise RuntimeError(f"Received status code {response.status_code} from solr with response: {response.content}")
 
     @staticmethod
