@@ -2,8 +2,6 @@ import math
 import re
 
 
-
-
 class Query:
 
     def __init__(self, query_id: int, query_text: str):
@@ -21,6 +19,9 @@ class Doc:
         self.doctext = doctext
         self.score = score
 
+    def __len__(self):
+        return len(self.doctext)
+
     def __repr__(self):
         return f"Doc({self.docno}, {self.score})"
 
@@ -37,6 +38,9 @@ class QueryResult:
 
     def __getitem__(self, item):
         return self.docs[item]
+
+    def __len__(self):
+        return len(self.docs)
 
     def __iter__(self):
         return iter(self.docs)

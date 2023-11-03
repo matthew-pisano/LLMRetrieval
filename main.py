@@ -26,6 +26,14 @@ def refine_query(query_result: QueryResult, model: Model, input_doc_tokens=500, 
     return Query(query_result.query.query_id, query_text + " ".join(to_add))
 
 
+def aggregate_results(original_result: QueryResult, refined_result: QueryResult):
+
+    aggregated_docs = original_result.docs + refined_result.docs
+    aggregated_docs = sorted(aggregated_docs, key=lambda x: x.score, reverse=True)[:len(original_result)]
+
+    return aggregated_docs
+
+
 if __name__ == "__main__":
     solr = Solr("trec", 8983)
     solr.start()
@@ -43,11 +51,15 @@ if __name__ == "__main__":
         refined_queries.append(new_query)
         refined_results.append(solr.query(new_query, rows=rows))
 
+    agg_results = [aggregate_results(res, ref_res) for res, ref_res in zip(results, refined_results)]
+
     results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=results)
     refined_results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=refined_results)
+    agg_results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=agg_results)
 
     print("Average DCG:", sum([res.dcg for res in results]) / len(results))
     print("Average Refined DCG:", sum([res.dcg for res in refined_results]) / len(refined_results))
 
     print("Eval:", results_eval["map"])
     print("Refined Eval:", refined_results_eval["map"])
+    print("Aggregated Eval:", agg_results_eval["map"])
