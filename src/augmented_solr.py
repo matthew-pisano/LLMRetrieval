@@ -13,12 +13,12 @@ class AugmentedSolr(Solr):
         super().__init__(collection_name, port)
         self.model = model
 
-    def query(self, query: Query, expand_query=True, filter_relevant=True, rows=10):
+    def query(self, query: Query, expand_query=True, term_reweighting=True, filter_relevant=True, rows=10):
 
         results = super().query(query, rows=rows if not filter_relevant else 2*rows)
 
         if expand_query:
-            query = self.expand_query(query, results)
+            query = self.reformulate_query(query, results, expand_query=expand_query, term_reweighting=term_reweighting)
             results = super().query(query, rows=rows if not filter_relevant else 2*rows)
 
         if filter_relevant:
@@ -26,24 +26,46 @@ class AugmentedSolr(Solr):
 
         return results
 
-    def expand_query(self, query: Query, query_result: QueryResult, input_doc_tokens=500, pseudo_rel_docs=2, pseudo_non_rel_docs=3):
-
-        doc_keywords = set()
+    def reformulate_query(self, query: Query, query_result: QueryResult, expand_query: bool, term_reweighting: bool, input_doc_tokens=500, pseudo_rel_docs=2, pseudo_non_rel_docs=3):
+        rel_keywords = set()
+        non_rel_words = set()
         query_text = query.query_text
 
-        for doc in tqdm(query_result[0:pseudo_rel_docs], desc="Processing query result"):
-            model_result = self.model.keywords_by_document(strip_stopwords(doc.doctext), input_doc_tokens=input_doc_tokens)
-            doc_keywords.update([strip_stopwords(kw) for kw in model_result])
-
-        non_rel_words = set()
         for result in query_result[-pseudo_non_rel_docs:]:
             non_rel_words.update(strip_stopwords(result.doctext).split(" "))
 
-        for word in non_rel_words:
-            if word in doc_keywords:
-                doc_keywords.remove(word)
+        for doc in tqdm(query_result[0:pseudo_rel_docs], desc="Processing query result"):
+            model_result = self.model.keywords_by_document(strip_stopwords(doc.doctext), input_doc_tokens=input_doc_tokens)
+            stripped_keywords = [strip_stopwords(kw) for kw in model_result]
+            rel_keywords.update(kw for kw in stripped_keywords if kw not in non_rel_words)
 
-        return Query(query.query_id, query_text + " ".join(doc_keywords))
+        if term_reweighting:
+            query = self.reweight_query_terms(query, rel_keywords, non_rel_words)
+
+        if expand_query:
+            query = self.expand_query(query, rel_keywords)
+
+        return Query(query.query_id, query_text + " ".join(rel_keywords))
+
+    def reweight_query_terms(self, query: Query, rel_keywords: set, non_rel_words: set, boost_factor=2, depress_factor=0.5):
+
+        def reweight(q_text: str, kw_set: set, factor: float):
+            for kw in kw_set:
+                if kw in q_text:
+                    splice = (q_text+" ").index(kw+" ")+len(kw)
+                    q_text = q_text[:splice] + f"^{factor}" + q_text[splice:]
+            return q_text
+
+        query_text = query.query_text
+        query_text = reweight(query_text, rel_keywords, boost_factor)
+        query_text = reweight(query_text, non_rel_words, depress_factor)
+
+        return Query(query.query_id, query_text)
+
+    def expand_query(self, query: Query, rel_keywords: set):
+
+        filtered_keywords = [kw for kw in rel_keywords if kw not in query.query_text]
+        return Query(query.query_id, query.query_text + " ".join(filtered_keywords))
 
     def relevance_feedback(self, query: Query, query_result: QueryResult, input_doc_tokens=500, target_results=10):
 

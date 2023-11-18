@@ -27,7 +27,7 @@ def main():
     solr.start()
     model = OpenAIModel("gpt-3.5-turbo")
     augmented_solr = AugmentedSolr("trec", 8983, model)
-    expand_query = False
+    expand_query = True
     filter_relevant = True
     rows = 10
 
