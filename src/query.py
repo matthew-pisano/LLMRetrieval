@@ -8,6 +8,9 @@ class Query:
         self.query_id = query_id
         self.query_text = query_text
 
+    def __len__(self):
+        return len(self.query_text)
+
     def __repr__(self):
         return f"Query({self.query_id})"
 

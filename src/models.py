@@ -15,9 +15,45 @@ class Model:
     def generate(self, prompt: str, **kwargs) -> str:
         ...
 
+    def judge_relevance(self, querytext: str, doctext: str, input_doc_tokens: int = None, threshold=1):
+        prompt = f"""You are an information retrieval expert.  Your goal is to judge the relevance of a document when compared to a query.
+Output your judgment as a score from 0 to 3. Such that:
+0 - not relevant at all
+1 - possibly relevant
+2 - relevant
+3 - very relevant
+
+For example:
+Query: "Norwegian Banking"
+Document: "Today, banks in Norway experienced a liquidity crisis leading the national bank to..."
+Judgment: 3/3
+
+Query: "Norwegian Banking"
+Document: "Last week, several large banks in China raised interest rates on housing loans..."
+Judgment: 2/3
+
+Query: "Norwegian Banking"
+Document: "The best places for petting goats in Kansas are..."
+Judgment: 0/3
+
+Query: "{querytext}"
+Document: "{doctext[:input_doc_tokens * 4] if input_doc_tokens is not None else doctext}"
+Judgment:"""
+
+        resp = self.generate(prompt)
+
+        i = 0
+        rating_str = ""
+        while resp[i] not in ["/", "."] and i < len(resp):
+            if resp[i].isdigit():
+                rating_str += resp[i]
+            i += 1
+
+        return int(rating_str) >= threshold
+
     def keywords_by_document(self, doctext: str, input_doc_tokens: int = None, num_keywords=5):
 
-        prompt = f"""You are an information retrieval expert.  Your goal is to find {num_keywords} keywords in a document that are the most relevant to the document as a whole.
+        prompt = f"""You are an information retrieval expert.  Your goal is to find the {num_keywords} most relevant keywords in a document.
 Give your answer as a JSON list of strings.
 For example: ["keyword1", "keyword2", ...]
 
