@@ -13,9 +13,26 @@ class Model:
     """Base class for models"""
 
     def generate(self, prompt: str, **kwargs) -> str:
+        """Generates a response to the prompt
+
+        Args:
+            prompt: The prompt to respond to
+        Returns:
+            The response to the prompt"""
+
         ...
 
     def judge_relevance(self, querytext: str, doctext: str, input_doc_tokens: int = None, threshold=1):
+        """Judges a document as relevant or non-relevant based on its text and the query that retrieved it
+
+        Args:
+            querytext: The text of the query
+            doctext: The text of the document
+            input_doc_tokens: The number of document tokens to send to the model at a time
+            threshold: The threshold of relevance based on the prompt's weighting scheme
+        Returns:
+            A boolean judgment of document relevance"""
+
         prompt = f"""You are an information retrieval expert.  Your goal is to judge the relevance of a document when compared to a query.
 Output your judgment as a score from 0 to 3. Such that:
 0 - not relevant at all
@@ -42,6 +59,7 @@ Judgment:"""
 
         resp = self.generate(prompt)
 
+        # Extract the first number from a response of `score/total`
         i = 0
         rating_str = ""
         while resp[i] not in ["/", "."] and i < len(resp):
@@ -52,6 +70,14 @@ Judgment:"""
         return int(rating_str) >= threshold
 
     def keywords_by_document(self, doctext: str, input_doc_tokens: int = None, num_keywords=5):
+        """Extracts the most relevant keywords of a document
+
+        Args:
+            doctext: The text of the document
+            input_doc_tokens: The number of document tokens to send to the model at a time
+            num_keywords: The number of keywords to extract from a document
+        Returns:
+            A set of the most relevant keywords in a document"""
 
         prompt = f"""You are an information retrieval expert.  Your goal is to find the {num_keywords} most relevant keywords in a document.
 Give your answer as a JSON list of strings.
@@ -75,6 +101,15 @@ Document:
             raise e
 
     def keywords_by_passage(self, doctext: str, input_doc_tokens: int = None, num_passages=3, kws_per_passage=3):
+        """Extracts the most relevant keywords of a series of selected passages within a document
+
+        Args:
+            doctext: The text of the document
+            input_doc_tokens: The number of document tokens to send to the model at a time
+            num_passages: The number of passages to extract from the document
+            kws_per_passage: The number of keywords to extract from a passage
+        Returns:
+            A set of the most relevant keywords in a document"""
 
         prompt = f"""You are an information retrieval expert.  Your goal is to find {num_passages} passages (a few sentences) in documents that are the most relevant to the document as a whole.  For each passage, also select {kws_per_passage} keywords that are particularly relevant.
 Give your answer as a list of JSON objects that contain keys passage and keywords.
@@ -105,10 +140,9 @@ Document:
 
 
 class ManualModel(Model):
-    """Manual input model"""
+    """Manual input model that gets generated text from the program's standard input"""
 
     def generate(self, prompt: str, accept_multiline=True, **kwargs):
-        """Allows a manual response to be entered from the standard input"""
 
         print("\n\n---\n" + prompt)
 
@@ -128,13 +162,12 @@ class ManualModel(Model):
 
 
 class OpenAIModel(Model):
-    """OpenAI API model"""
+    """OpenAI API model that generates text through the OpenAI API"""
 
     def __init__(self, model_name: str):
         self.model_name = model_name
 
     def generate(self, prompt: str, **kwargs):
-        """Generates a response from the target OpenAI model"""
 
         response = openai.ChatCompletion.create(model=self.model_name,
             messages=[{"role": "system", "content": "You are an information retrieval expert.  You gather relevant information from documents and output your responses in valid JSON format."},

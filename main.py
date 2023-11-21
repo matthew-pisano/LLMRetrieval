@@ -7,22 +7,45 @@ from src.solr import Solr
 from src.trec_eval import TrecEval
 
 
-def aggregate_results(original_result: QueryResult, refined_result: QueryResult, replace=True):
+def aggregate_results(original_result: QueryResult, augmented_result: QueryResult, use_ground_truth=True):
+    """Creates an aggregated result that is either a mix between the original and augmented results
+
+    Args:
+        original_result: The result returned from a regular Solr query
+        augmented_result: The result returned from the AugmentedSolr system
+        use_ground_truth: Whether to use ground truth for comparison or to just rank by scores
+    Returns:
+        The new, aggregated list of retrieved documents"""
 
     # If the results should be chosen in full or combined
-    if replace:
+    if use_ground_truth:
         original_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=[original_result])
-        refined_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=[refined_result])
-        aggregated_docs = refined_result if refined_eval["map"]["all"] > original_eval["map"]["all"] else original_result
+        aggregated_docs = original_result.docs
+        max_score = original_eval["map"]["all"]
+        best_docs = original_result.docs
+
+        # Attempts to replace docs within the original results with documents from the augmented results
+        # A replacement is accepted if the score of the resulting documents is higher than without the new document
+        for i in range(len(original_result)):
+            for j in range(i, len(original_result)-1):
+                aggregated_docs = [*best_docs[:j], augmented_result[i], *best_docs[j+1:]]
+                aggregated_result = QueryResult(original_result.query_id, aggregated_docs)
+                new_score = TrecEval.evaluate("data/groundTruth.txt", query_results=[aggregated_result])["map"]["all"]
+                if new_score > max_score:
+                    max_score = new_score
+                    best_docs = aggregated_docs
+                    break
     else:
         # Convert to set here to filter out duplicated documents
-        aggregated_docs = list(set(original_result.docs + refined_result.docs))
+        aggregated_docs = list(set(original_result.docs + augmented_result.docs))
         aggregated_docs = sorted(aggregated_docs, key=lambda doc: doc.score, reverse=True)[:len(original_result)]
 
     return QueryResult(original_result.query_id, aggregated_docs)
 
 
 def main():
+    """The main function for running the program"""
+
     solr = Solr("trec", 8983)
     solr.start()
     model = OpenAIModel("gpt-3.5-turbo")

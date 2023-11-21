@@ -7,12 +7,23 @@ from src.query import QueryResult
 
 
 class TrecEval:
+    """An instance of the Trec-Eval program that judges the results of TREC queries based on a ground truth"""
 
     @classmethod
     def evaluate(cls, ground_truth_file: str, *, query_results: list[QueryResult] = None, solr_results_file: str = None):
+        """Evaluates a query based on either its results or a file of formatted Solr results
+
+        Args:
+            ground_truth_file: The file containing the ground truth data
+            query_results: The results from a Solr query as an object
+            solr_results_file: The results from a Solr query, saved to a file
+        Returns:
+            A dataframe of the evaluation for the query results"""
+
         if not ((query_results is None) ^ (solr_results_file is None)):
             raise ValueError("Requires one of query_results or solr_results_file parameters")
 
+        # If not already in file form, write to a temporary file
         if query_results:
             solr_results_file = "tmp/query_results.txt"
             with open(solr_results_file, "w") as file:
@@ -29,6 +40,13 @@ class TrecEval:
 
     @staticmethod
     def format_query_results(query_results: list[QueryResult]):
+        """Formats the results of a query into a format that Trec-Eval can parse
+
+        Args:
+            query_results: The results from a query
+        Returns:
+            A string containing the formatted results"""
+
         formatted = ""
 
         for result in query_results:
@@ -39,6 +57,12 @@ class TrecEval:
 
     @staticmethod
     def _execute(args: list[str]):
+        """Executes a command on the Trec-Eval program through its command line interface
+
+        Args:
+            args: The command line arguments to run
+        Returns:
+            The standard output and error of the command"""
 
         process = Popen(['trec_eval']+args, stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()

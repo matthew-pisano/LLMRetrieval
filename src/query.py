@@ -1,10 +1,15 @@
 import math
-import re
 
 
 class Query:
+    """A query that is given to a Solr system"""
 
     def __init__(self, query_id: int, query_text: str):
+        """
+        Args:
+            query_id: The TREC id of a query
+            query_text: The text of a TREC query"""
+
         self.query_id = query_id
         self.query_text = query_text
 
@@ -16,8 +21,15 @@ class Query:
 
 
 class Doc:
+    """A document that is retrieved from Solr"""
 
     def __init__(self, docno: str, doctext: str, score: float):
+        """
+        Args:
+            docno: The id of the document
+            doctext: The text of the document
+            score: The score given to the document by Solr without a reference to the ground truth"""
+
         self.docno = docno
         self.doctext = doctext
         self.score = score
@@ -39,8 +51,14 @@ class Doc:
 
 
 class QueryResult:
+    """The full result from a query including statistics about its composition"""
 
     def __init__(self, query_id: int, result_docs: list[Doc]):
+        """
+        Args:
+            query_id: The TREC id of the query used to retrieve this result
+            result_docs: A list of retrieved documents"""
+
         self.query_id = query_id
         self.docs = result_docs
         self.scores = [doc.score for doc in self.docs]
