@@ -1,3 +1,5 @@
+import sys
+
 from tqdm import tqdm
 
 from src.augmented_solr import AugmentedSolr
@@ -54,7 +56,24 @@ def main():
     filter_relevant = True
     rows = 10
 
-    queries = solr.load_batch_queries("data/queries.txt")[15:20]
+    queries = solr.load_batch_queries("data/queries.txt")
+
+    first_query = 0
+    last_query = len(queries)
+
+    if len(sys.argv) == 2:
+        raise ValueError("This program takes zero or two arguments")
+
+    if len(sys.argv) == 3:
+        if not sys.argv[1].isdigit() or int(sys.argv[1]) < 0:
+            raise ValueError("The value of the first argument must be an integer >= 0")
+        if not sys.argv[2].isdigit() or int(sys.argv[2]) < 0 or int(sys.argv[2]) <= int(sys.argv[1]):
+            raise ValueError("The value of the second argument must be an integer >= 0 and > the first argument")
+
+        first_query = int(sys.argv[1])
+        last_query = int(sys.argv[2])
+
+    queries = queries[first_query:last_query]
 
     results = [solr.query(query, rows=rows) for query in queries]
     augmented_results = [augmented_solr.query(query, expand_query=expand_query, filter_relevant=filter_relevant, rows=rows) for query in queries]

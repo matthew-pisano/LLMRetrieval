@@ -41,12 +41,12 @@ class AugmentedSolr(Solr):
 
         return results
 
-    def reformulate_query(self, query: Query, query_result: QueryResult, expand_query: bool, term_reweighting: bool, input_doc_tokens=500, pseudo_rel_docs=2, pseudo_non_rel_docs=3):
+    def reformulate_query(self, query: Query, original_result: QueryResult, expand_query: bool, term_reweighting: bool, input_doc_tokens=500, pseudo_rel_docs=2, pseudo_non_rel_docs=3):
         """Uses several methods to reformulate a user's query including term re-weighting and query expansion
 
         Args:
             query: The user query to reformulate
-            query_result: The original result from the query
+            original_result: The original result from the query
             expand_query: Whether to perform a query expansion
             term_reweighting: Whether to perform term re-weighting
             input_doc_tokens: The number of document tokens to send to the model at a time
@@ -62,17 +62,18 @@ class AugmentedSolr(Solr):
         non_rel_words = set()
         query_text = query.query_text
 
+        if term_reweighting:
+            # Gather impactful keywords from non-relevant documents
+            for result in original_result[-pseudo_non_rel_docs:]:
+                non_rel_words.update(strip_stopwords(result.doctext).split(" "))
+
         # Gather impactful keywords from relevant documents
-        for doc in tqdm(query_result[0:pseudo_rel_docs], desc="Processing query result"):
+        for doc in tqdm(original_result[0:pseudo_rel_docs], desc="Processing query result"):
             model_result = self.model.keywords_by_document(strip_stopwords(doc.doctext), input_doc_tokens=input_doc_tokens)
             stripped_keywords = [strip_stopwords(kw) for kw in model_result]
             rel_keywords.update(kw for kw in stripped_keywords if kw not in non_rel_words)
 
         if term_reweighting:
-            # Gather impactful keywords from non-relevant documents
-            for result in query_result[-pseudo_non_rel_docs:]:
-                non_rel_words.update(strip_stopwords(result.doctext).split(" "))
-
             query = self.reweight_query_terms(query, rel_keywords, non_rel_words)
 
         if expand_query:
