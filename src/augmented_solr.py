@@ -41,7 +41,7 @@ class AugmentedSolr(Solr):
 
         return results
 
-    def reformulate_query(self, query: Query, original_result: QueryResult, expand_query: bool, term_reweighting: bool, input_doc_tokens=500, pseudo_rel_docs=2, pseudo_non_rel_docs=3):
+    def reformulate_query(self, query: Query, original_result: QueryResult, expand_query: bool, term_reweighting: bool, input_doc_tokens=500, pseudo_rel_docs=2, pseudo_non_rel_docs=3, quiet=True):
         """Uses several methods to reformulate a user's query including term re-weighting and query expansion
 
         Args:
@@ -52,6 +52,7 @@ class AugmentedSolr(Solr):
             input_doc_tokens: The number of document tokens to send to the model at a time
             pseudo_rel_docs: The top N retrieved documents which should be considered pseudo-relevant
             pseudo_non_rel_docs: The bottom N retrieved documents which should be considered pseudo-non-relevant
+            quiet: Whether to print out a progress bar
         Returns:
             A Query object containing the reformulated query"""
 
@@ -68,7 +69,7 @@ class AugmentedSolr(Solr):
                 non_rel_words.update(strip_stopwords(result.doctext).split(" "))
 
         # Gather impactful keywords from relevant documents
-        for doc in tqdm(original_result[0:pseudo_rel_docs], desc="Processing query result"):
+        for doc in tqdm(original_result[0:pseudo_rel_docs], desc="Processing query result", disable=quiet):
             model_result = self.model.keywords_by_document(strip_stopwords(doc.doctext), input_doc_tokens=input_doc_tokens)
             stripped_keywords = [strip_stopwords(kw) for kw in model_result]
             rel_keywords.update(kw for kw in stripped_keywords if kw not in non_rel_words)
@@ -96,7 +97,7 @@ class AugmentedSolr(Solr):
         def reweight(q_text: str, kw_set: set, factor: float):
             for kw in kw_set:
                 if kw in q_text:
-                    splice = (q_text+" ").index(kw+" ")+len(kw)
+                    splice = (q_text+" ").index(kw)+len(kw)
                     q_text = q_text[:splice] + f"^{factor}" + q_text[splice:]
             return q_text
 
@@ -118,7 +119,7 @@ class AugmentedSolr(Solr):
         filtered_keywords = [kw for kw in rel_keywords if kw not in query.query_text]
         return Query(query.query_id, query.query_text + " ".join(filtered_keywords))
 
-    def relevance_feedback(self, query: Query, query_result: QueryResult, input_doc_tokens=500, target_results=10):
+    def relevance_feedback(self, query: Query, query_result: QueryResult, input_doc_tokens=500, target_results=10, quiet=True):
         """Filters our non-relevant documents from a list of retrieved documents by using an LLM to judge relevance
 
         Args:
@@ -126,12 +127,13 @@ class AugmentedSolr(Solr):
             query_result: The list of retrieved documents
             input_doc_tokens: The number of document tokens to send to the model at a time
             target_results: The maximum number of documents to include in the filtered results
+            quiet: Whether to print out a progress bar
         Returns:
             The filtered query results"""
 
         filtered_docs = []
         i = 1
-        for doc in tqdm(query_result[:target_results], desc="Evaluating document relevance"):
+        for doc in tqdm(query_result[:target_results], desc="Evaluating document relevance", disable=quiet):
             is_relevant = self.model.judge_relevance(query.query_text, doc.doctext, input_doc_tokens=input_doc_tokens)
             # Add only relevant documents to the final list
             if is_relevant:
