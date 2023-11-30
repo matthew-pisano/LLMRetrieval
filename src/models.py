@@ -92,10 +92,12 @@ Document:
 ["""
         resp = self.generate(prompt).replace("\n", "").replace("...", "")
 
+        # Add brackets in case the model does not generate them
         if not resp.startswith("["):
             resp = "[" + resp
         if not resp.endswith("]"):
             resp += "]"
+
         try:
             return set(json.loads(resp))
         except json.JSONDecodeError as e:
@@ -127,6 +129,7 @@ Document:
         resp = self.generate(prompt).replace("\n", "")
         resp = resp.replace("}{", "}, {")
 
+        # Add brackets in case the model does not generate them
         if not resp.startswith("["):
             resp = "["+resp
         if not resp.endswith("]"):

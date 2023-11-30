@@ -29,7 +29,7 @@ class Doc:
             docno: The id of the document
             doctext: The text of the document
             score: The score given to the document by Solr without a reference to the ground truth
-            relevant: If the document is relevant as a one or a zero"""
+            relevant: If the document is relevant as a one or a zero. Before being set by the augmented system, it is -inf"""
 
         self.docno = docno
         self.doctext = doctext
@@ -68,10 +68,15 @@ class QueryResult:
 
     @property
     def cg(self):
+        """Cumulative gain using relevance judgments"""
+
         return sum([doc.relevant for doc in self.docs])
 
     @property
     def dcg(self):
+        """Discounted cumulative gain using relevance judgments"""
+
+        # This could be used in place of TREC for scoring, but TREC is more accurate due to the ground truth so this is not used
         return sum([doc.relevant/math.log2(i+2) for i, doc in enumerate(self.docs)])
 
     def __getitem__(self, item):

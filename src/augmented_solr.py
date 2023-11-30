@@ -33,9 +33,12 @@ class AugmentedSolr(Solr):
 
         results = super().query(query, rows=rows)
 
-        query = self.reformulate_query(query, results, expand_query=expand_query, term_reweighting=term_reweighting)
-        results = super().query(query, rows=rows)
+        # Generate new query and gather new results
+        if expand_query or term_reweighting:
+            query = self.reformulate_query(query, results, expand_query=expand_query, term_reweighting=term_reweighting)
+            results = super().query(query, rows=rows)
 
+        # Filter and rerank results
         if filter_relevant:
             results = self.relevance_feedback(query, results, feedback_on_top_n=10)
 
@@ -57,30 +60,30 @@ class AugmentedSolr(Solr):
             A Query object containing the reformulated query"""
 
         if not expand_query and not term_reweighting:
-            return query
+            raise ValueError("You must choose at least one of query expansion or term reweighting.  Neither are selected")
 
         rel_keywords = set()
         non_rel_words = set()
-        query_text = query.query_text
 
         if term_reweighting:
             # Gather impactful keywords from non-relevant documents
             for result in original_result[-pseudo_non_rel_docs:]:
                 non_rel_words.update(strip_stopwords(result.doctext).split(" "))
 
-        # Gather impactful keywords from relevant documents
+        # Gather impactful keywords from only first relevant documents
         for doc in tqdm(original_result[0:pseudo_rel_docs], desc="Processing query result", disable=quiet):
             model_result = self.model.keywords_by_document(strip_stopwords(doc.doctext), input_doc_tokens=input_doc_tokens)
             stripped_keywords = [strip_stopwords(kw) for kw in model_result]
             rel_keywords.update(kw for kw in stripped_keywords if kw not in non_rel_words)
 
+        # Increase the weights of relevant keywords and depress the weights of non-relevant keywords in the original query
         if term_reweighting:
             query = self.reweight_query_terms(query, rel_keywords, non_rel_words)
-
+        # Expand original query with relevant keywords extracted from the documents
         if expand_query:
             query = self.expand_query(query, rel_keywords)
 
-        return Query(query.query_id, query_text + " ".join(rel_keywords))
+        return Query(query.query_id, query.query_text)
 
     def reweight_query_terms(self, query: Query, rel_keywords: set, non_rel_words: set, boost_factor=2, depress_factor=0.5):
         """Use Solr's query syntax to weight up any relevant terms and weight down any non-relevant terms
@@ -95,6 +98,15 @@ class AugmentedSolr(Solr):
             The re-weighted query"""
 
         def reweight(q_text: str, kw_set: set, factor: float):
+            """Reweights a query on the terms in the given set by the given factor
+
+            Args:
+                q_text: The query to reweight
+                kw_set: The set of keywords to reweight
+                factor: The factor to reweight the selected keywords by
+            Returns:
+                The reweighted query"""
+
             for kw in kw_set:
                 if kw in q_text:
                     splice = (q_text+" ").index(kw)+len(kw)
@@ -102,6 +114,7 @@ class AugmentedSolr(Solr):
             return q_text
 
         query_text = query.query_text
+        # Perform reweighting twice on relevant and non-relevant keywords.  Helper function used to reuse code
         query_text = reweight(query_text, rel_keywords, boost_factor)
         query_text = reweight(query_text, non_rel_words, depress_factor)
 
@@ -134,6 +147,8 @@ class AugmentedSolr(Solr):
         relevant_docs = []
         non_relevant_docs = []
         i = 1
+
+        # Judge the relevance of only the top documents.  Split these top documents into relevant and non-relevant sets
         for doc in tqdm(query_result[:feedback_on_top_n], desc="Evaluating document relevance", disable=quiet):
             is_relevant = self.model.judge_relevance(query.query_text, doc.doctext, input_doc_tokens=input_doc_tokens)
             # Update document relevance
@@ -145,9 +160,11 @@ class AugmentedSolr(Solr):
                 non_relevant_docs.append(doc)
             i += 1
 
+        # Add the remainder of the documents to the relevant set
         for doc in query_result[feedback_on_top_n:]:
             relevant_docs.append(doc)
 
+        # Add back in the non-relevant documents to the back of the set
         while len(non_relevant_docs) > 0:
             relevant_docs.append(non_relevant_docs.pop(0))
 

@@ -46,6 +46,7 @@ class Solr:
             A list of documents that are intended to be relevant to the query"""
 
         query_url = f"{self.base_url}/select"
+        # Query Solr for results
         response = requests.get(query_url, params={"fl": "docno,score,doctext", "q": f"doctext:({query.query_text})", "rows": rows, "sort": "score desc"})
         if response.status_code == 200:
             docs = [Doc(doc["docno"], doc["doctext"], doc["score"]) for doc in response.json()["response"]["docs"]]

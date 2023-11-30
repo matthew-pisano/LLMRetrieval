@@ -36,9 +36,11 @@ class TrecEval:
 
         stdout = "Statistic\tQuery Id\tValue\n"+stdout
 
+        # Parse the Trec-Eval document as a dataframe for easier manipulation
         eval_data = pd.read_csv(StringIO(stdout), delimiter="\t")
         eval_data["Statistic"] = eval_data["Statistic"].str.strip()
         eval_data["Value"] = pd.to_numeric(eval_data["Value"], errors='coerce')
+        # Group by query id
         eval_data = eval_data.pivot(index="Query Id", columns="Statistic")["Value"]
         return eval_data
 
@@ -53,6 +55,7 @@ class TrecEval:
 
         formatted = ""
 
+        # Formats into: <query id> Q0 <docno> <rank> <score> DFR
         for result in query_results:
             for i, doc in enumerate(result.docs):
                 formatted += f"{result.query_id} Q0 {doc.docno.replace('[', '').replace(']', '')} {i+1} {doc.score} DFR\n"
@@ -71,6 +74,7 @@ class TrecEval:
         process = Popen(['trec_eval']+args+['-m', 'all_trec'], stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
         stdout, stderr = stdout.decode(), stderr.decode()
+
         if process.returncode != 0:
             raise RuntimeError(f"trec_eval exited with code {process.returncode} and error: {stderr}")
 
