@@ -23,16 +23,18 @@ class Query:
 class Doc:
     """A document that is retrieved from Solr"""
 
-    def __init__(self, docno: str, doctext: str, score: float):
+    def __init__(self, docno: str, doctext: str, score: float, relevant: float = -float("inf")):
         """
         Args:
             docno: The id of the document
             doctext: The text of the document
-            score: The score given to the document by Solr without a reference to the ground truth"""
+            score: The score given to the document by Solr without a reference to the ground truth
+            relevant: If the document is relevant as a one or a zero"""
 
         self.docno = docno
         self.doctext = doctext
         self.score = score
+        self.relevant = relevant
 
     def __len__(self):
         return len(self.doctext)
@@ -63,8 +65,14 @@ class QueryResult:
         self.docs = result_docs
         self.scores = [doc.score for doc in self.docs]
         self.max_score = max(self.scores)
-        self.cg = sum(self.scores)
-        self.dcg = sum([score/math.log2(i+2) for i, score in enumerate(self.scores)])
+
+    @property
+    def cg(self):
+        return sum([doc.relevant for doc in self.docs])
+
+    @property
+    def dcg(self):
+        return sum([doc.relevant/math.log2(i+2) for i, doc in enumerate(self.docs)])
 
     def __getitem__(self, item):
         return self.docs[item]

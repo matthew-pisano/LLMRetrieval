@@ -172,14 +172,14 @@ class OpenAIModel(Model):
     def __init__(self, model_name: str):
         self.model_name = model_name
 
-    def generate(self, prompt: str, timeout=5, retries=2, **kwargs):
+    def generate(self, prompt: str, timeout=10, retries=4, **kwargs):
         try:
             response = openai.ChatCompletion.create(model=self.model_name, request_timeout=timeout,
                 messages=[{"role": "system", "content": "You are an information retrieval expert.  You gather relevant information from documents and output your responses in valid JSON format."},
                           {"role": "user", "content": prompt}])
         except Exception as e:
             if retries > 0:
-                time.sleep(5)
+                time.sleep(10)
                 return self.generate(prompt, timeout=timeout, retries=retries-1, **kwargs)
             raise e
 

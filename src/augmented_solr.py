@@ -31,13 +31,13 @@ class AugmentedSolr(Solr):
         Returns:
             A list of documents that are intended to be relevant to the query"""
 
-        results = super().query(query, rows=rows if not filter_relevant else 2*rows)
+        results = super().query(query, rows=rows)
 
         query = self.reformulate_query(query, results, expand_query=expand_query, term_reweighting=term_reweighting)
-        results = super().query(query, rows=rows if not filter_relevant else 2*rows)
+        results = super().query(query, rows=rows)
 
         if filter_relevant:
-            results = self.relevance_feedback(query, results, target_results=rows)
+            results = self.relevance_feedback(query, results, feedback_on_top_n=10)
 
         return results
 
@@ -119,31 +119,36 @@ class AugmentedSolr(Solr):
         filtered_keywords = [kw for kw in rel_keywords if kw not in query.query_text]
         return Query(query.query_id, query.query_text + " ".join(filtered_keywords))
 
-    def relevance_feedback(self, query: Query, query_result: QueryResult, input_doc_tokens=500, target_results=10, quiet=True):
-        """Filters our non-relevant documents from a list of retrieved documents by using an LLM to judge relevance
+    def relevance_feedback(self, query: Query, query_result: QueryResult, input_doc_tokens=500, feedback_on_top_n=10, quiet=True):
+        """Filters our non-relevant documents from a list of retrieved documents and puts them at the bottom by using an LLM to judge relevance
 
         Args:
             query: The query that was used to retrieve the documents
             query_result: The list of retrieved documents
             input_doc_tokens: The number of document tokens to send to the model at a time
-            target_results: The maximum number of documents to include in the filtered results
+            feedback_on_top_n: The maximum number of documents to provide feedback on
             quiet: Whether to print out a progress bar
         Returns:
             The filtered query results"""
 
-        filtered_docs = []
+        relevant_docs = []
+        non_relevant_docs = []
         i = 1
-        for doc in tqdm(query_result[:target_results], desc="Evaluating document relevance", disable=quiet):
+        for doc in tqdm(query_result[:feedback_on_top_n], desc="Evaluating document relevance", disable=quiet):
             is_relevant = self.model.judge_relevance(query.query_text, doc.doctext, input_doc_tokens=input_doc_tokens)
+            # Update document relevance
+            doc.relevant = is_relevant
             # Add only relevant documents to the final list
             if is_relevant:
-                filtered_docs.append(doc)
+                relevant_docs.append(doc)
+            else:
+                non_relevant_docs.append(doc)
             i += 1
 
-        # Append the next best retrieved documents to pad the length to the desired value
-        i = 0
-        while len(filtered_docs) < target_results:
-            filtered_docs.append(query_result[target_results + i])
-            i += 1
+        for doc in query_result[feedback_on_top_n:]:
+            relevant_docs.append(doc)
 
-        return QueryResult(query_result.query_id, filtered_docs)
+        while len(non_relevant_docs) > 0:
+            relevant_docs.append(non_relevant_docs.pop(0))
+
+        return QueryResult(query_result.query_id, relevant_docs)

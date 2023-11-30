@@ -2,7 +2,7 @@
 
 ## Overview
 
-The aim of this project is to augment the Solr information retrieval system with the capabilities of a large language model.  This model is GPT-3.5.  The combined system performs two types of actions: query reformulation and giving relevance feedback on retrieved documents.
+The aim of this project is to augment the Solr information retrieval system with the capabilities of a large language model.  This model is GPT-3.5.  The combined system performs two types of actions: query reformulation and giving relevance feedback on retrieved documents.  This system produces three sets of results.  The first set is from the **original** query.  The second is from the **augmented** query that the system produced.  And the third is a set of **aggregated** results that combines the first two.
 
 ## Quick Start
 
@@ -22,7 +22,11 @@ python main.py <FIRST_QUERY> <LAST_QUERY>
 
 where the arguments are both integers representing the index of the first TREC query to run the system on and the last query to run the system on.  If both arguments are not provided, all TREC queries will be used.
 
-### Stopword Removal
+## Evaluation Results
+
+The evaluation for this program is performed by TREC eval.  MAP and nDCG are used as evaluation metrics for the top 200 results for all 48 TREC queries.  Evaluation results can be found in the [results](results) folder.  This contains the raw output from the TREC eval of all three results and the [MAP and nDCG](results/full_trec_results.txt) from all three results in one file for easy comparison per query.
+
+## Stopword Removal
 
 Many of the functions of this augmented retrieval system require the removal of stopwords from text.  For this, the `nltk` library is used.  Each stopword from `nltk.corpus.stopwords` is then replaced with a space in the given text.
 
@@ -44,7 +48,7 @@ For query expansion, the same relevant terms from above are reused to expand the
 
 ## Relevance Feedback
 
-During this process, documents deemed non-relevant by the LLM are removed from the list of retrieved documents.  After getting a new list of documents from the reformulated query, each is judged on a three point scale from zero (not relevant at all), to three (very relevant).  Any document that scores a zero is removed from the list.  If relevance feedback is selected, the system will automatically generate double the required number of documents from the reformulated query as overflow.  When a document is removed from the list, it is padded at the end with the next highest document from the overflow section.  Since only the first half of the documents are judged, the length of the returned list will always be the requested length.  This is because there are enough documents to fill in evan a completely replaced list.
+During this process, documents deemed non-relevant by the LLM are sent to the back of the list of retrieved documents.  After getting a new list of documents from the reformulated query, each is judged on a four point scale from zero (not relevant at all), to three (very relevant).  Any document that scores a zero is sent to the back of the list.  Since non-relevant documents are only sent to the back of the list in order, the size of the final result list is the same as the initial.
 
 ## Prompting
 

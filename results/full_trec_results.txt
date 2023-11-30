@@ -1,0 +1,196 @@
+Query 302 Eval (map, ndcg): 1.0 1.0
+Query 302 Augmented Eval (map, ndcg): 1.0 1.0
+Query 302 Aggregated Eval (map, ndcg): 0.325 0.5013
+---
+Query 308 Eval (map, ndcg): 0.0625 0.2447
+Query 308 Augmented Eval (map, ndcg): 0.0833 0.2702
+Query 308 Aggregated Eval (map, ndcg): 0.006 0.1351
+---
+Query 310 Eval (map, ndcg): 0.0204 0.1772
+Query 310 Augmented Eval (map, ndcg): 0.0238 0.1843
+Query 310 Aggregated Eval (map, ndcg): 0.0128 0.1586
+---
+Query 313 Eval (map, ndcg): 0.7917 0.9134
+Query 313 Augmented Eval (map, ndcg): 1.0 1.0
+Query 313 Aggregated Eval (map, ndcg): 0.7083 0.8664
+---
+Query 314 Eval (map, ndcg): 0.25 0.4307
+Query 314 Augmented Eval (map, ndcg): 0.0909 0.2789
+Query 314 Aggregated Eval (map, ndcg): 0.1 0.2891
+---
+Query 316 Eval (map, ndcg): 0.1422 0.3654
+Query 316 Augmented Eval (map, ndcg): 0.0 0.0
+Query 316 Aggregated Eval (map, ndcg): 0.0081 0.1628
+---
+Query 318 Eval (map, ndcg): 0.101 0.3001
+Query 318 Augmented Eval (map, ndcg): 0.1889 0.3783
+Query 318 Aggregated Eval (map, ndcg): 0.0324 0.1928
+---
+Query 321 Eval (map, ndcg): 0.0113 0.1299
+Query 321 Augmented Eval (map, ndcg): 0.0 0.0
+Query 321 Aggregated Eval (map, ndcg): 0.004 0.1039
+---
+Query 324 Eval (map, ndcg): 0.7073 0.9044
+Query 324 Augmented Eval (map, ndcg): 0.6532 0.8814
+Query 324 Aggregated Eval (map, ndcg): 0.0727 0.3839
+---
+Query 325 Eval (map, ndcg): 1.0 1.0
+Query 325 Augmented Eval (map, ndcg): 1.0 1.0
+Query 325 Aggregated Eval (map, ndcg): 1.0 1.0
+---
+Query 330 Eval (map, ndcg): 0.1745 0.4148
+Query 330 Augmented Eval (map, ndcg): 0.1072 0.35
+Query 330 Aggregated Eval (map, ndcg): 0.1478 0.3928
+---
+Query 334 Eval (map, ndcg): 0.95 0.9829
+Query 334 Augmented Eval (map, ndcg): 0.8167 0.9268
+Query 334 Aggregated Eval (map, ndcg): 0.8125 0.928
+---
+Query 337 Eval (map, ndcg): 0.4934 0.7756
+Query 337 Augmented Eval (map, ndcg): 0.2479 0.4754
+Query 337 Aggregated Eval (map, ndcg): 0.3448 0.6533
+---
+Query 338 Eval (map, ndcg): 1.0 1.0
+Query 338 Augmented Eval (map, ndcg): 1.0 1.0
+Query 338 Aggregated Eval (map, ndcg): 1.0 1.0
+---
+Query 339 Eval (map, ndcg): 0.2083 0.4298
+Query 339 Augmented Eval (map, ndcg): 0.0972 0.3166
+Query 339 Aggregated Eval (map, ndcg): 0.1548 0.3753
+---
+Query 341 Eval (map, ndcg): 0.2039 0.3899
+Query 341 Augmented Eval (map, ndcg): 0.118 0.3315
+Query 341 Aggregated Eval (map, ndcg): 0.218 0.4546
+---
+Query 344 Eval (map, ndcg): 1.0 1.0
+Query 344 Augmented Eval (map, ndcg): 1.0 1.0
+Query 344 Aggregated Eval (map, ndcg): 1.0 1.0
+---
+Query 348 Eval (map, ndcg): 0.0056 0.1336
+Query 348 Augmented Eval (map, ndcg): 0.0 0.0
+Query 348 Aggregated Eval (map, ndcg): 0.0 0.0
+---
+Query 352 Eval (map, ndcg): 0.0016 0.0416
+Query 352 Augmented Eval (map, ndcg): 0.0 0.0
+Query 352 Aggregated Eval (map, ndcg): 0.0 0.0
+---
+Query 353 Eval (map, ndcg): 0.8167 0.9295
+Query 353 Augmented Eval (map, ndcg): 1.0 1.0
+Query 353 Aggregated Eval (map, ndcg): 0.7232 0.8852
+---
+Query 359 Eval (map, ndcg): 0.2591 0.5042
+Query 359 Augmented Eval (map, ndcg): 0.2286 0.426
+Query 359 Aggregated Eval (map, ndcg): 0.2355 0.4768
+---
+Query 361 Eval (map, ndcg): 0.0147 0.1637
+Query 361 Augmented Eval (map, ndcg): 0.0 0.0
+Query 361 Aggregated Eval (map, ndcg): 0.0 0.0
+---
+Query 367 Eval (map, ndcg): 0.0681 0.2789
+Query 367 Augmented Eval (map, ndcg): 0.0025 0.0585
+Query 367 Aggregated Eval (map, ndcg): 0.0106 0.168
+---
+Query 373 Eval (map, ndcg): 0.6154 0.8385
+Query 373 Augmented Eval (map, ndcg): 1.0 1.0
+Query 373 Aggregated Eval (map, ndcg): 0.2707 0.5575
+---
+Query 377 Eval (map, ndcg): 1.0 1.0
+Query 377 Augmented Eval (map, ndcg): 1.0 1.0
+Query 377 Aggregated Eval (map, ndcg): 1.0 1.0
+---
+Query 381 Eval (map, ndcg): 0.0 0.0
+Query 381 Augmented Eval (map, ndcg): 0.0 0.0
+Query 381 Aggregated Eval (map, ndcg): 0.0 0.0
+---
+Query 385 Eval (map, ndcg): 0.1264 0.3632
+Query 385 Augmented Eval (map, ndcg): 0.1282 0.3431
+Query 385 Aggregated Eval (map, ndcg): 0.1083 0.3118
+---
+Query 388 Eval (map, ndcg): 0.6429 0.8277
+Query 388 Augmented Eval (map, ndcg): 0.4519 0.7216
+Query 388 Aggregated Eval (map, ndcg): 0.4306 0.7089
+---
+Query 391 Eval (map, ndcg): 0.2822 0.6175
+Query 391 Augmented Eval (map, ndcg): 0.189 0.4674
+Query 391 Aggregated Eval (map, ndcg): 0.0793 0.3968
+---
+Query 392 Eval (map, ndcg): 0.4138 0.7264
+Query 392 Augmented Eval (map, ndcg): 0.2091 0.5704
+Query 392 Aggregated Eval (map, ndcg): 0.015 0.2048
+---
+Query 401 Eval (map, ndcg): 0.0048 0.0569
+Query 401 Augmented Eval (map, ndcg): 0.0027 0.0645
+Query 401 Aggregated Eval (map, ndcg): 0.0022 0.06
+---
+Query 402 Eval (map, ndcg): 0.3403 0.5516
+Query 402 Augmented Eval (map, ndcg): 0.3611 0.5636
+Query 402 Aggregated Eval (map, ndcg): 0.2108 0.4615
+---
+Query 403 Eval (map, ndcg): 1.0 1.0
+Query 403 Augmented Eval (map, ndcg): 1.0 1.0
+Query 403 Aggregated Eval (map, ndcg): 1.0 1.0
+---
+Query 404 Eval (map, ndcg): 0.4116 0.7133
+Query 404 Augmented Eval (map, ndcg): 0.3906 0.7529
+Query 404 Aggregated Eval (map, ndcg): 0.487 0.7784
+---
+Query 408 Eval (map, ndcg): 0.5208 0.755
+Query 408 Augmented Eval (map, ndcg): 0.3417 0.5787
+Query 408 Aggregated Eval (map, ndcg): 0.5062 0.7354
+---
+Query 414 Eval (map, ndcg): 0.3026 0.5287
+Query 414 Augmented Eval (map, ndcg): 1.0 1.0
+Query 414 Aggregated Eval (map, ndcg): 0.1364 0.3588
+---
+Query 416 Eval (map, ndcg): 0.8056 0.906
+Query 416 Augmented Eval (map, ndcg): 0.6333 0.818
+Query 416 Aggregated Eval (map, ndcg): 0.042 0.264
+---
+Query 418 Eval (map, ndcg): 0.1 0.2201
+Query 418 Augmented Eval (map, ndcg): 0.1274 0.3247
+Query 418 Aggregated Eval (map, ndcg): 0.0386 0.1693
+---
+Query 419 Eval (map, ndcg): 0.0041 0.0882
+Query 419 Augmented Eval (map, ndcg): 0.0455 0.171
+Query 419 Aggregated Eval (map, ndcg): 0.0 0.0
+---
+Query 420 Eval (map, ndcg): 1.0 1.0
+Query 420 Augmented Eval (map, ndcg): 1.0 1.0
+Query 420 Aggregated Eval (map, ndcg): 0.0055 0.1331
+---
+Query 421 Eval (map, ndcg): 0.0408 0.2568
+Query 421 Augmented Eval (map, ndcg): 0.0098 0.1169
+Query 421 Aggregated Eval (map, ndcg): 0.0287 0.2321
+---
+Query 433 Eval (map, ndcg): 0.0 0.0
+Query 433 Augmented Eval (map, ndcg): 0.0 0.0
+Query 433 Aggregated Eval (map, ndcg): 0.0 0.0
+---
+Query 434 Eval (map, ndcg): 0.0055 0.0646
+Query 434 Augmented Eval (map, ndcg): 0.0203 0.0998
+Query 434 Aggregated Eval (map, ndcg): 0.0004 0.0216
+---
+Query 444 Eval (map, ndcg): 0.3333 0.5
+Query 444 Augmented Eval (map, ndcg): 0.3333 0.5
+Query 444 Aggregated Eval (map, ndcg): 0.1111 0.301
+---
+Query 445 Eval (map, ndcg): 0.3333 0.4693
+Query 445 Augmented Eval (map, ndcg): 0.3778 0.5866
+Query 445 Aggregated Eval (map, ndcg): 0.0507 0.2234
+---
+Query 446 Eval (map, ndcg): 0.219 0.5608
+Query 446 Augmented Eval (map, ndcg): 0.0923 0.3326
+Query 446 Aggregated Eval (map, ndcg): 0.0296 0.244
+---
+Query 447 Eval (map, ndcg): 1.0 1.0
+Query 447 Augmented Eval (map, ndcg): 0.3333 0.5
+Query 447 Aggregated Eval (map, ndcg): 0.1429 0.3333
+---
+Query 450 Eval (map, ndcg): 0.6493 0.8709
+Query 450 Augmented Eval (map, ndcg): 0.7228 0.8968
+Query 450 Aggregated Eval (map, ndcg): 0.642 0.8675
+---
+Query all Eval (map, ndcg): 0.4049 0.5505
+Query all Augmented Eval (map, ndcg): 0.3839 0.506
+Query all Aggregated Eval (map, ndcg): 0.2553 0.4061
+---

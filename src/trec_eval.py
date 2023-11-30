@@ -30,6 +30,10 @@ class TrecEval:
                 file.write(cls.format_query_results(query_results))
 
         stdout, stderr = cls._execute(['-q', ground_truth_file, solr_results_file])
+
+        with open("tmp/trec_eval.txt", "w") as file:
+            file.write(stdout)
+
         stdout = "Statistic\tQuery Id\tValue\n"+stdout
 
         eval_data = pd.read_csv(StringIO(stdout), delimiter="\t")
@@ -64,7 +68,7 @@ class TrecEval:
         Returns:
             The standard output and error of the command"""
 
-        process = Popen(['trec_eval']+args, stdout=PIPE, stderr=PIPE)
+        process = Popen(['trec_eval']+args+['-m', 'all_trec'], stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
         stdout, stderr = stdout.decode(), stderr.decode()
         if process.returncode != 0:

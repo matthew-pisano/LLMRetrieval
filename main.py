@@ -55,7 +55,7 @@ def main():
     expand_query = True
     term_reweighting = True
     filter_relevant = True
-    rows = 10
+    rows = 200
 
     queries = solr.load_batch_queries("data/queries.txt")
 
@@ -77,25 +77,25 @@ def main():
     # Select range from full query list if arguments are provided
     queries = queries[first_query:last_query]
 
-    results = [solr.query(query, rows=rows) for query in tqdm(queries, desc="Querying Solr")]
-    augmented_results = [augmented_solr.query(query, expand_query=expand_query, term_reweighting=term_reweighting, filter_relevant=filter_relevant, rows=rows) for query in tqdm(queries, desc="Querying Augmented Solr")]
+    results = {str(query.query_id): solr.query(query, rows=rows) for query in tqdm(queries, desc="Querying Solr")}
+    augmented_results = {str(query.query_id): augmented_solr.query(query, expand_query=expand_query, term_reweighting=term_reweighting, filter_relevant=filter_relevant, rows=rows) for query in tqdm(queries, desc="Querying Augmented Solr")}
 
-    agg_results = [aggregate_results(res, aug_res) for res, aug_res in zip(results, augmented_results)]
+    agg_results = {res[0]: aggregate_results(res[1], aug_res[1]) for res, aug_res in zip(results.items(), augmented_results.items())}
 
-    results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=results)
-    augmented_results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=augmented_results)
-    agg_results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=agg_results)
+    results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=list(results.values()))
+    augmented_results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=list(augmented_results.values()))
+    agg_results_eval = TrecEval.evaluate("data/groundTruth.txt", query_results=list(agg_results.values()))
 
     for index, _ in results_eval.iterrows():
-        print(f"Query {index} Eval (map, recip rank):", results_eval.loc[index]["map"], results_eval.loc[index]["recip_rank"])
-        print(f"Query {index} Augmented Eval (map, recip rank):", augmented_results_eval.loc[index]["map"], augmented_results_eval.loc[index]["recip_rank"])
-        print(f"Query {index} Aggregated Eval (map, recip rank):", agg_results_eval.loc[index]["map"], agg_results_eval.loc[index]["recip_rank"])
+        print(f"Query {index} Eval (map, ndcg):", results_eval.loc[index]["map"], results_eval.loc[index]["ndcg"])
+        print(f"Query {index} Augmented Eval (map, ndcg):", augmented_results_eval.loc[index]["map"], augmented_results_eval.loc[index]["ndcg"])
+        print(f"Query {index} Aggregated Eval (map, ndcg):", agg_results_eval.loc[index]["map"], agg_results_eval.loc[index]["ndcg"])
         print("---")
 
-    print("---Average DCG---")
-    print("Average DCG:", sum([res.dcg for res in results]) / len(results))
-    print("Average Refined DCG:", sum([res.dcg for res in augmented_results]) / len(augmented_results))
-    print("Average Aggregated DCG:", sum([res.dcg for res in agg_results]) / len(agg_results))
+    # print("---Average DCG---")
+    # print("Average DCG:", sum([res.dcg for res in results.values()]) / len(results))
+    # print("Average Refined DCG:", sum([res.dcg for res in augmented_results.values()]) / len(augmented_results))
+    # print("Average Aggregated DCG:", sum([res.dcg for res in agg_results.values()]) / len(agg_results))
 
     # print("Eval (map, recip rank):", results_eval["map"]["all"], results_eval["recip_rank"]["all"])
     # print("Augmented Eval (map, recip rank):", augmented_results_eval["map"]["all"], augmented_results_eval["recip_rank"]["all"])
