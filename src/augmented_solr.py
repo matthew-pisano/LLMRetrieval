@@ -107,11 +107,12 @@ class AugmentedSolr(Solr):
             Returns:
                 The reweighted query"""
 
+            new_query = q_text
             for kw in kw_set:
-                if kw in q_text:
-                    splice = (q_text+" ").index(kw)+len(kw)
-                    q_text = q_text[:splice] + f"^{factor}" + q_text[splice:]
-            return q_text
+                if kw+" " in q_text and len(kw) > 0 and kw+" " in new_query+" ":
+                    splice = (new_query+" ").index(kw+" ")+len(kw)
+                    new_query = new_query[:splice] + f"^{factor}" + new_query[splice:]
+            return new_query
 
         query_text = query.query_text
         # Perform reweighting twice on relevant and non-relevant keywords.  Helper function used to reuse code

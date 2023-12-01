@@ -8,6 +8,7 @@ The aim of this project is to augment the Solr information retrieval system with
 
 This project requires several dependencies before it is ready to run:
 
+* The Solr and Trec-eval programs in the directory or otherwise globally accessible.
 * A valid Python 3 environment with the packages from the [requirements.txt](requirements.txt) file installed.
   * This should ideally be Python 3.10 or above, but older versions may still work.
 * A valid OpenAI account is needed to make API calls to GPT.
@@ -20,11 +21,11 @@ To run the system, run the [main.py](main.py) file with:
 python main.py <FIRST_QUERY> <LAST_QUERY>
 ```
 
-where the arguments are both integers representing the index of the first TREC query to run the system on and the last query to run the system on.  If both arguments are not provided, all TREC queries will be used.
+where the arguments are both integers representing the index TREC queries (0-49).  The first argument is the first TREC query to run the system on and the second is the last query to run the system on.  If both arguments are not provided, all TREC queries will be used.
 
 ## Evaluation Results
 
-The evaluation for this program is performed by TREC eval.  MAP and nDCG are used as evaluation metrics for the top 200 results for all 48 TREC queries.  Evaluation results can be found in the [results](results) folder.  This contains the raw output from the TREC eval of all three results and the [MAP and nDCG](results/full_trec_results.txt) from all three results in one file for easy comparison per query.
+This system is evaluated using the TREC dataset.  The evaluation for this program is performed by TREC eval.  MAP and nDCG are used as evaluation metrics for the top 200 results for all 48 TREC queries.  Evaluation results can be found in the [results](results) folder.  This contains the raw output from the TREC eval of all three results and the [MAP and nDCG](results/full_trec_results.txt) from all three results in one file for easy comparison per query.
 
 ## Stopword Removal
 
@@ -48,7 +49,7 @@ For query expansion, the same relevant terms from above are reused to expand the
 
 ## Relevance Feedback
 
-During this process, documents deemed non-relevant by the LLM are sent to the back of the list of retrieved documents.  After getting a new list of documents from the reformulated query, each is judged on a four point scale from zero (not relevant at all), to three (very relevant).  Any document that scores a zero is sent to the back of the list.  Since non-relevant documents are only sent to the back of the list in order, the size of the final result list is the same as the initial.
+During this process, documents within the top ten that are deemed non-relevant by the LLM are sent to the back of the list of retrieved documents.  After getting a new list of documents from the reformulated query, each is judged on a four point scale from zero (not relevant at all), to three (very relevant).  Any document that scores a zero is sent to the back of the list.  Since non-relevant documents are only sent to the back of the list in order, the size of the final result list is the same as the initial.
 
 ## Prompting
 
